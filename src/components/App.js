@@ -45,6 +45,7 @@ class App extends Component {
           let user = await loveCoin.methods.users(this.state.account).call();
           this.setState({user:user});
           let loveCoinBalance = await loveCoin.methods.balanceOf(this.state.account).call();
+          console.log(loveCoinBalance);
           loveCoinBalance = web3.utils.fromWei(loveCoinBalance,"ether");
           this.setState({loveCoinBalance: loveCoinBalance.toString()});
 
@@ -98,6 +99,8 @@ class App extends Component {
       let feed=[];
       let feedLookup=[]
       let feedLength;
+      let matches = await this.getMatches();
+
       //If user is male then itterate over all females 
       //In the future find ways to jumble this up so it's more random. Not important for small ammounts of users though
       if(this.state.user.male ===true){
@@ -105,8 +108,10 @@ class App extends Component {
         for(let i=0; i < feedLength; i++){
           let addition = await this.state.loveCoin.methods.femaleUsers(0).call();
           let p = await this.getUserFromAddress(addition);
-          feedLookup.push(addition);
-          feed.push(p);
+          if(!matches.some(o=>JSON.stringify(o)===JSON.stringify(p))){
+            feedLookup.push(addition);
+            feed.push(p);  
+          }
         }
 
       }
@@ -115,10 +120,11 @@ class App extends Component {
         feedLength = await this.state.loveCoin.methods.numberOfLikes(this.state.account).call();
         for(var i=0; i<feedLength; i++){
           let addition = await this.state.loveCoin.methods.have_liked(this.state.account,i).call();
-          console.log(addition);
           let p = await this.getUserFromAddress(addition);
-          feedLookup.push(addition);
-          feed.push(p);
+          if(!matches.some(o=>JSON.stringify(o)===JSON.stringify(p))){
+            feedLookup.push(addition);
+            feed.push(p);
+          }
         }
       }
       return[feed,feedLookup];
@@ -127,14 +133,11 @@ class App extends Component {
 
   like=async(who)=>{
     await this.state.loveCoin.methods.like(who).send({from:this.state.account});
-    console.log("like successful!");
   }
 
   accept = async(who)=>{  //What this guy says ^
     await this.state.loveCoin.methods.accept(who).send({from:this.state.account});
-    console.log("Accept!");
   }
-
 
   async getUserFromAddress(address){
     let user = await this.state.loveCoin.methods.users(address).call();
@@ -168,6 +171,14 @@ class App extends Component {
     return matches;
   }
 
+  burnTokens = async(e,ammount)=>{
+    e.preventDefault();
+    this.setState({loading:true});
+    console.log(web3.utils.toWei(ammount,"Ether"));
+    await this.state.loveCoin.methods.burn(web3.utils.toWei(ammount,"Ether")).send({from:this.state.account});
+    this.setState({loading:false});
+  }
+
   render() {
     if(this.state.loading){
       return(
@@ -189,6 +200,7 @@ class App extends Component {
             like = {this.like}
             accept = {this.accept}
             getMatches = {this.getMatches}
+            burnTokens = {this.burnTokens}
             />
         </div>
       );

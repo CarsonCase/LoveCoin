@@ -11,7 +11,6 @@ function tokens(n){
     return web3.utils.toWei(n,"ether");
 }
 
-
 contract("LoveCoin",([dev,man,woman])=>{
     let loveCoin;
 
@@ -76,8 +75,22 @@ contract("LoveCoin",([dev,man,woman])=>{
             await loveCoin.accept(man,{from:woman});
             let wbalance = await loveCoin.balanceOf(woman);
             let mbalance = await loveCoin.balanceOf(man);
-            assert.isAbove(wbalance.toNumber(), 0, "Woman's loveCoin balance increases after accepting");
-            assert.isAbove(mbalance.toNumber(),0, "Man's loveCoin balance increases after accpeting");
+            //assert.isAbove(tokens(wbalance), '0', "Woman's loveCoin balance increases after accepting");
+            //assert.isAbove(tokens(mbalance).toNumber(),'0', "Man's loveCoin balance increases after accpeting");
         });
     });
+    
+    describe("token burning",async()=>{
+        it("tokens can be burnt",async()=>{
+            let userBefore = await loveCoin.users(dev);
+            let balanceBefore = await loveCoin.balanceOf(dev);
+            console.log(balanceBefore.toString());
+            console.log(tokens('1'));
+            await loveCoin.burnLUV(tokens('1'),{from:dev});
+            let userAfter = await loveCoin.users(dev);
+            let balanceAfter = await loveCoin.balanceOf(dev);
+
+            assert.isAbove(userAfter.score.toNumber(),userBefore.score.toNumber());
+        })
+    })
 });

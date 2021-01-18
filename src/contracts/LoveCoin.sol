@@ -1,13 +1,13 @@
 pragma solidity >=0.5.0 <0.8.0;
 
 //import ERC20
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
 
 /*==========================================================
 DATING APP CONTRACT
 By: Carson Case
 ==========================================================*/
-contract LoveCoin is ERC20{
+contract LoveCoin is ERC20Burnable{
     
     //mint some tokens to yours truly as a dev fee
     constructor(uint256 initialSupply) public ERC20("Love Coin", "LUV") {
@@ -66,6 +66,8 @@ contract LoveCoin is ERC20{
         -Callable by female to accept a male
     numberOfLikes:
         -Returns the length of a female user's like list
+    burn:
+        -Burns loveCoins in return for score
     ==========================================================*/
     function join(bool _sex, string memory _handle) public{
         //Only add new user to respective array if they are truly new
@@ -106,10 +108,20 @@ contract LoveCoin is ERC20{
  
         //COINS! NOTE: coins are only distributed from acceptances. Women may not benefit from acceptances with points. But will get coins
         //Mint coins to each as share of total attractivness pool. 
-        _mint(msg.sender,(users[msg.sender].score/female_score_sum) * 100000);
-        _mint(_to_accept,(users[_to_accept].score/male_score_sum) * 100000);
+        _mint(msg.sender,((users[msg.sender].score/female_score_sum) * 1 ether));
+        _mint(_to_accept,((users[_to_accept].score/male_score_sum) * 1 ether));
 
 
+    }
+    function burnLUV(uint256 _amount) public{
+        burn(_amount);
+        uint256 reward = _amount/1 ether;
+        users[msg.sender].score += reward;
+        if(users[msg.sender].male){
+            male_score_sum+=reward;
+        }else{
+            female_score_sum+=reward;
+        }
     }
     function numberOfLikes(address _user) public returns(uint256){
         return have_liked[_user].length;

@@ -19,10 +19,7 @@ class Main extends React.Component{
       usersMatches: []
     };
 
-  }
-  //pretnet list of our heros existing mataches. This will actually be user objects
-  //NOTE: We will need another mapping for this. Each user's matches. Will be used for NOTE above to sort out existing matches
-  
+  }  
 
   async connect(e){
     e.preventDefault();
@@ -38,16 +35,6 @@ class Main extends React.Component{
     await this.props.join(sex,handle);
     await this.setState({page:2});    
 
-  }
-
-  burnTokens(e,n){
-    e.preventDefault();
-    if(this.props.balance < n){
-      alert("Not enough tokens");
-    }else{
-        //Call the burn tokens function. Needs to be added. But converts LUV to score
-        console.log("LUV burned");
-    }
   }
 
   render(){
@@ -94,19 +81,20 @@ class Main extends React.Component{
 
     let statsPanel;
     if(this.props.user.isUser){
-        console.log(this.usersMatches);
+      let burnAmmount = 0;
     statsPanel=<div>
         <h1>User Stats</h1>
         <form onSubmit = {(e)=>{
-          this.burnTokens(e,10);
+          this.props.burnTokens(e,burnAmmount);
         }}>
+          <input onChange={(e)=>{burnAmmount=e.target.value}}></input>
           <button>Self Love</button>
         </form>
         <p>Score: {this.props.user.score}</p>    
         <p> Balance: {this.props.balance} LUV</p> 
         <h1>Your Matches</h1>
         {this.state.usersMatches.map(match=>(
-                    <p>{match.handle}[{12}]</p>
+                    <p>{match.handle}[{match.score}]</p>
                 ))}
 
     </div>
